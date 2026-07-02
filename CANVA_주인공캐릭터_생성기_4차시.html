@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>4차시 · 주인공 캐릭터 생성기 (캔바 매직미디어 프롬프트)</title>
+<style>
+  :root{
+    --bg:#14121d; --panel:#1b1830; --panel2:#231f3a; --line:#332d4d;
+    --text:#eee9f7; --muted:#a99fc4; --accent:#c9a6ff; --accent2:#ffcf6b; --pink:#ff9ecb;
+    --chip:#282343; --danger:#ff7a9a; --warn:#ffcf6b; --good:#8ce8b0;
+    --radius:16px; --mono:"Cascadia Code",Consolas,"D2Coding",monospace;
+    --sans:"Pretendard","Malgun Gothic","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;font-size:16px}
+  header{padding:22px 20px 18px;text-align:center;background:linear-gradient(180deg,#1d1930,#14121d);border-bottom:1px solid var(--line)}
+  header h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:-.3px}
+  header .sub{color:var(--muted);font-size:13.5px;max-width:560px;margin:0 auto}
+
+  /* ---------- 스텝퍼 ---------- */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:6px;padding:18px 12px 6px;max-width:520px;margin:0 auto}
+  .step-dot{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;opacity:.55}
+  .step-dot .num{width:34px;height:34px;border-radius:999px;background:var(--chip);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--muted)}
+  .step-dot .label{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .step-dot.active{opacity:1}
+  .step-dot.active .num{background:var(--accent);border-color:var(--accent);color:#14121d}
+  .step-dot.active .label{color:var(--text)}
+  .step-dot.done{opacity:1}
+  .step-dot.done .num{background:var(--good);border-color:var(--good);color:#14121d}
+  .step-line{flex:1;height:2px;background:var(--line);max-width:60px;margin-top:-18px}
+
+  main{max-width:640px;margin:0 auto;padding:8px 18px 60px}
+  .step-panel{display:none;animation:fade .25s ease}
+  .step-panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+  .card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:7px}
+  .card .hint{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+
+  label.f{display:block;margin-bottom:16px}
+  label.f .lab{font-size:14px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  label.f .lab .req{color:var(--pink);font-size:12px}
+  label.f .lab .opt{color:var(--muted);font-weight:400;font-size:12px}
+  input[type=text],textarea{width:100%;background:var(--panel2);border:1.5px solid var(--line);color:var(--text);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px}
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  input[type=password]{width:100%;background:var(--panel2);border:1.5px solid var(--line);color:var(--text);border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:13px}
+
+  /* ---------- 칩(선택형 버튼) ---------- */
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chip);border:1.5px solid var(--line);color:var(--text);border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .chip:hover{border-color:var(--accent)}
+  .chip.selected{background:var(--accent);border-color:var(--accent);color:#14121d}
+  .chip.small{padding:6px 12px;font-size:12.5px}
+
+  /* ---------- 종류/분위기 카드 버튼 ---------- */
+  .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opt-btn{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;color:var(--text)}
+  .opt-btn .emoji{font-size:26px;display:block;margin-bottom:6px}
+  .opt-btn .name{font-size:13px;font-weight:700}
+  .opt-btn:hover{border-color:var(--accent)}
+  .opt-btn.selected{border-color:var(--accent);background:rgba(201,166,255,.14)}
+  @media(max-width:480px){.opt-grid{grid-template-columns:repeat(3,1fr)}}
+
+  .btn{background:var(--accent);color:#14121d;border:none;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;font-size:14.5px}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.big{width:100%;padding:16px;font-size:16px;border-radius:14px}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+  .btn.pink{background:var(--pink);color:#14121d}
+  .btn.small{padding:8px 14px;font-size:12.5px;border-radius:10px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  .nav-row{display:flex;gap:10px;margin-top:6px}
+  .nav-row .btn.ghost{flex:0 0 auto}
+  .nav-row .btn.big{flex:1}
+
+  /* ---------- 스타일 카드(2단계) ---------- */
+  .style-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:480px){.style-grid{grid-template-columns:1fr}}
+  .style-card{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
+  .style-card .swatch{height:38px;border-radius:9px;margin-bottom:9px}
+  .style-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:6px}
+  .style-card p{margin:0;color:var(--muted);font-size:12px}
+  .style-card.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,166,255,.25)}
+
+  /* ---------- 3단계 출력 ---------- */
+  .badge{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);margin:0 6px 6px 0}
+  .badge b{color:var(--accent2)}
+  .recap{margin-bottom:16px}
+  .out-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .out-head h2{margin:0;font-size:15px}
+  pre{background:#0e0c17;border:1px solid var(--line);border-radius:12px;padding:14px;white-space:pre-wrap;word-break:break-word;font-family:var(--sans);font-size:14.5px;margin:0;color:#e4dcff;line-height:1.65}
+  .copybar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .ok{color:var(--good);font-size:12.5px;font-weight:700}
+  .err{color:var(--danger);font-size:12.5px;font-weight:700}
+  .tipbox{background:rgba(201,166,255,.09);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;font-size:13px;color:#efe6ff;margin:12px 0}
+  .safebox{background:rgba(255,207,107,.09);border:1px solid var(--warn);border-radius:12px;padding:12px 14px;font-size:13px;color:#ffe6b0;margin:12px 0}
+
+  /* ---------- API 설정 ---------- */
+  .settings-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+  .settings-body{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .settings-body.open{display:block}
+  .keyrow{display:flex;gap:8px}
+  .keyrow input{flex:1}
+  .apinote{color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5}
+
+  .spinner{display:inline-block;width:14px;height:14px;border:2.5px solid rgba(238,233,247,.3);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .foot{color:var(--muted);font-size:11.5px;margin-top:18px;text-align:center;padding:0 10px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🦸 주인공 캐릭터 만들기</h1>
+  <div class="sub">4차시 · 내가 상상한 주인공을 캔바 매직미디어(Magic Media) 프롬프트로 바꿔드려요. 실제 얼굴 사진 대신, 상상 속 모습으로 안전하게 표현해요!</div>
+</header>
+
+<div class="stepper" id="stepper">
+  <div class="step-dot active" data-step="1"><span class="num">1</span><span class="label">외형 정하기</span></div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="2"><span class="num">2</span><span class="label">그림 스타일</span></div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="3"><span class="num">3</span><span class="label">완성!</span></div>
+</div>
+
+<main>
+
+  <!-- ===================== STEP 1 ===================== -->
+  <section id="step1" class="step-panel active">
+    <div class="card">
+      <h2>👤 우리 주인공은 누구인가요?</h2>
+      <p class="hint">종류를 골라주세요.</p>
+      <div class="opt-grid" id="typeGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 주요 색깔</h2>
+      <p class="hint">아래 색깔 칩을 눌러 담거나, 직접 글로 적어도 돼요. (예: 반짝이는 금색과 하늘색)</p>
+      <div class="chip-row" id="colorChips"></div>
+      <label class="f" style="margin-top:12px;margin-bottom:0">
+        <span class="lab">주요 색깔 <span class="req">*필수</span></span>
+        <input type="text" id="colorInput" placeholder="예: 새빨간색, 반짝이는 금색">
+      </label>
+    </div>
+
+    <div class="card">
+      <h2>👕 옷 · 소품</h2>
+      <label class="f" style="margin-bottom:0">
+        <span class="lab">어떤 옷을 입고, 무엇을 들고 있나요? <span class="req">*필수</span></span>
+        <input type="text" id="outfitInput" placeholder="예: 별무늬 망토와 마법 지팡이">
+      </label>
+    </div>
+
+    <div class="card">
+      <h2>😊 표정 · 분위기</h2>
+      <p class="hint">우리 주인공의 마음은 어떤 느낌인가요?</p>
+      <div class="mood-grid" id="moodGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>✨ 특별한 특징</h2>
+      <label class="f" style="margin-bottom:0">
+        <span class="lab">다른 사람과 다른 나만의 특징 <span class="opt">(선택사항)</span></span>
+        <input type="text" id="traitInput" placeholder="예: 왼쪽 귀에 별 모양 흉터가 있어요">
+      </label>
+    </div>
+
+    <div class="safebox">🔒 실제 친구나 가족의 얼굴 사진, 이름은 넣지 마세요! 우리는 상상 속 캐릭터를 만드는 거예요.</div>
+
+    <button class="btn big" id="toStep2" disabled>다음 단계로 → 그림 스타일 고르기</button>
+  </section>
+
+  <!-- ===================== STEP 2 ===================== -->
+  <section id="step2" class="step-panel">
+    <div class="card">
+      <h2>🖼️ 어떤 그림 스타일이 좋을까요?</h2>
+      <p class="hint">주인공을 그릴 화풍을 하나 골라주세요. 캔바에서 그대로 사용할 수 있어요.</p>
+      <div class="style-grid" id="styleGrid"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn ghost" id="backTo1">← 이전</button>
+      <button class="btn big" id="toStep3" disabled>다음 단계로 → 프롬프트 완성하기</button>
+    </div>
+  </section>
+
+  <!-- ===================== STEP 3 ===================== -->
+  <section id="step3" class="step-panel">
+    <div class="card recap">
+      <h2>✅ 내가 만든 주인공</h2>
+      <div id="recapBadges"></div>
+    </div>
+
+    <div class="card">
+      <div class="out-head"><h2>🇰🇷 한글 프롬프트</h2></div>
+      <pre id="koOut"></pre>
+      <div class="copybar">
+        <button class="btn small" id="copyKo">📋 한글 복사</button>
+        <span id="koMsg"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="out-head">
+        <h2>🇺🇸 영어 프롬프트</h2>
+        <span class="badge" id="enStatus">자동 번역</span>
+      </div>
+      <pre id="enOut"></pre>
+      <div class="copybar">
+        <button class="btn small" id="copyEn">📋 영어 복사</button>
+        <button class="btn small pink" id="refineBtn">✨ Claude AI로 더 자연스럽게 다듬기</button>
+        <span id="enMsg"></span>
+      </div>
+    </div>
+
+    <div class="tipbox">💡 <b>캔바 사용법:</b> 캔바(Canva) → <b>매직미디어(Magic Media)</b> 메뉴에 들어가서 위 영어 프롬프트를 붙여넣고 이미지를 만들어보세요! 마음에 드는 그림이 나올 때까지 여러 번 만들어도 좋아요.</div>
+
+    <div class="card">
+      <div class="settings-toggle" id="settingsToggle">
+        <span class="lab">⚙️ Claude API 키 설정 (AI 다듬기 기능용)</span>
+        <span id="settingsArrow">▾</span>
+      </div>
+      <div class="settings-body" id="settingsBody">
+        <div class="keyrow">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-... (Claude API 키를 입력하세요)">
+          <button class="btn small ghost" id="toggleKeyView">보기</button>
+        </div>
+        <p class="apinote">
+          ✨ '더 자연스럽게 다듬기' 버튼을 쓰려면 Anthropic Claude API 키가 필요해요 (console.anthropic.com 에서 선생님이 발급).<br>
+          🔑 이 키는 이 컴퓨터의 브라우저에만 저장되고, Anthropic 서버로만 전송돼요. 다른 사람과 공용으로 쓰는 컴퓨터에는 저장하지 마세요.<br>
+          🚫 API 키 없이도 기본 영어 프롬프트는 자동으로 만들어지니, 이 기능은 선택사항이에요.
+        </p>
+      </div>
+    </div>
+
+    <button class="btn ghost big" id="restartBtn">↺ 처음부터 다시 만들기</button>
+  </section>
+
+  <div class="foot">만든이 도구 · 4차시 주인공 캐릭터 프롬프트 생성기 — 상상 속 캐릭터만 만들어요, 실제 인물 사진은 사용하지 않아요.</div>
+</main>
+
+<script>
+const g = id => document.getElementById(id);
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+/* ---------- 데이터 ---------- */
+const CHARTYPES = {
+  person:   {ko:"사람 캐릭터",     en:"a child character",              emoji:"🧒"},
+  animal:   {ko:"동물 캐릭터",     en:"an animal character",            emoji:"🐻"},
+  creature: {ko:"상상 속 생명체",  en:"a fantastical imaginary creature", emoji:"🦄"},
+};
+
+const MOODS = {
+  bright: {ko:"밝고 씩씩한",   en:"bright, cheerful, and full of energy", emoji:"😄"},
+  calm:   {ko:"조용하고 차분한", en:"calm, gentle, and quiet",             emoji:"😌"},
+  funny:  {ko:"엉뚱하고 재미있는", en:"quirky, playful, and funny",        emoji:"🤪"},
+  mystic: {ko:"신비롭고 조용한", en:"mysterious and softly quiet",         emoji:"🌙"},
+};
+
+const STYLES = {
+  watercolor: {ko:"수채화",      en:"soft watercolor illustration with gentle, blended brush strokes", sw:"linear-gradient(90deg,#ffd7e6,#cfe8ff,#d7f0d8)"},
+  manhwa:     {ko:"만화체",      en:"clean comic / manhwa style with bold outlines and flat colors",   sw:"linear-gradient(90deg,#ff9e7d,#ffd36b,#7ec8a0)"},
+  digital:    {ko:"디지털페인팅", en:"rich digital painting with painterly brush strokes and soft lighting", sw:"linear-gradient(90deg,#6a4c93,#f79256,#ffca3a)"},
+  cartoon:    {ko:"카툰",        en:"playful, exaggerated cartoon style like an animated movie",       sw:"linear-gradient(90deg,#ff70a6,#70d6ff,#ffd670)"},
+  pastel:     {ko:"파스텔",      en:"dreamy, soft pastel color palette with gentle gradients",         sw:"linear-gradient(90deg,#f7d6e0,#d6c2f7,#c2e0f7)"},
+};
+
+const COLOR_PRESETS = ["빨간색","주황색","노란색","초록색","파란색","보라색","분홍색","하늘색","갈색","검은색","하얀색","금색","은색","무지개색"];
+const COLOR_EN = {
+  "빨간색":"red","주황색":"orange","노란색":"yellow","초록색":"green","파란색":"blue","남색":"navy blue",
+  "보라색":"purple","분홍색":"pink","하늘색":"sky blue","갈색":"brown","검은색":"black","하얀색":"white",
+  "금색":"gold","은색":"silver","무지개색":"rainbow colors",
+};
+
+/* ---------- 상태 ---------- */
+let state = { type:"", color:"", outfit:"", mood:"", trait:"", style:"" };
+
+/* ---------- 1단계: 종류 ---------- */
+function renderTypeGrid(){
+  const el = g("typeGrid"); el.innerHTML = "";
+  Object.entries(CHARTYPES).forEach(([key,v])=>{
+    const b = document.createElement("div");
+    b.className = "opt-btn" + (state.type===key ? " selected":"");
+    b.innerHTML = `<span class="emoji">${v.emoji}</span><span class="name">${v.ko}</span>`;
+    b.onclick = ()=>{ state.type = key; renderTypeGrid(); validateStep1(); };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- 1단계: 색깔 칩 ---------- */
+function renderColorChips(){
+  const el = g("colorChips"); el.innerHTML = "";
+  COLOR_PRESETS.forEach(c=>{
+    const b = document.createElement("button");
+    b.type="button"; b.className="chip small";
+    b.textContent = c;
+    b.onclick = ()=>{
+      const cur = g("colorInput").value.split(",").map(s=>s.trim()).filter(Boolean);
+      if(!cur.includes(c)) cur.push(c);
+      g("colorInput").value = cur.join(", ");
+      state.color = g("colorInput").value;
+      validateStep1();
+    };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- 1단계: 표정/분위기 ---------- */
+function renderMoodGrid(){
+  const el = g("moodGrid"); el.innerHTML = "";
+  Object.entries(MOODS).forEach(([key,v])=>{
+    const b = document.createElement("div");
+    b.className = "opt-btn" + (state.mood===key ? " selected":"");
+    b.innerHTML = `<span class="emoji">${v.emoji}</span><span class="name">${v.ko}</span>`;
+    b.onclick = ()=>{ state.mood = key; renderMoodGrid(); validateStep1(); };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- 2단계: 스타일 카드 ---------- */
+function renderStyleGrid(){
+  const el = g("styleGrid"); el.innerHTML = "";
+  Object.entries(STYLES).forEach(([key,v])=>{
+    const c = document.createElement("div");
+    c.className = "style-card" + (state.style===key ? " selected":"");
+    c.innerHTML = `<div class="swatch" style="background:${v.sw}"></div><h3>${v.ko}</h3><p>${v.en}</p>`;
+    c.onclick = ()=>{ state.style = key; renderStyleGrid(); g("toStep3").disabled = !state.style; };
+    el.appendChild(c);
+  });
+}
+
+/* ---------- 입력 이벤트 ---------- */
+g("colorInput").addEventListener("input", ()=>{ state.color = g("colorInput").value.trim(); validateStep1(); });
+g("outfitInput").addEventListener("input", ()=>{ state.outfit = g("outfitInput").value.trim(); validateStep1(); });
+g("traitInput").addEventListener("input", ()=>{ state.trait = g("traitInput").value.trim(); });
+
+function validateStep1(){
+  const ok = state.type && state.color && state.outfit && state.mood;
+  g("toStep2").disabled = !ok;
+}
+
+/* ---------- 스텝 네비게이션 ---------- */
+function goStep(n){
+  [1,2,3].forEach(i=>{
+    g("step"+i).classList.toggle("active", i===n);
+    const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
+    dot.classList.toggle("active", i===n);
+    dot.classList.toggle("done", i<n);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(n===3) buildOutputs();
+}
+g("toStep2").onclick = ()=> goStep(2);
+g("backTo1").onclick = ()=> goStep(1);
+g("toStep3").onclick = ()=> goStep(3);
+
+document.querySelectorAll(".step-dot").forEach(d=>{
+  d.addEventListener("click", ()=>{
+    const target = parseInt(d.dataset.step,10);
+    if(target===1) return goStep(1);
+    if(target===2 && state.type && state.color && state.outfit && state.mood) return goStep(2);
+    if(target===3 && state.style) return goStep(3);
+  });
+});
+
+g("restartBtn").onclick = ()=>{
+  if(!confirm("처음부터 다시 만들까요?")) return;
+  state = { type:"", color:"", outfit:"", mood:"", trait:"", style:"" };
+  g("colorInput").value=""; g("outfitInput").value=""; g("traitInput").value="";
+  renderTypeGrid(); renderMoodGrid(); renderStyleGrid();
+  g("toStep2").disabled = true; g("toStep3").disabled = true;
+  g("enStatus").textContent = "자동 번역";
+  goStep(1);
+};
+
+/* ---------- 프롬프트 조립 ---------- */
+function buildKorean(){
+  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
+  let p = `${s.ko} 스타일로 그린 ${t.ko}.`;
+  if(state.color) p += ` 주요 색깔은 ${state.color}이다.`;
+  if(state.outfit) p += ` ${state.outfit}을(를) 하고 있다.`;
+  p += ` 표정과 분위기는 ${m.ko} 느낌이다.`;
+  if(state.trait) p += ` 특별한 특징: ${state.trait}.`;
+  p += ` 정면을 바라보는 전신 포즈, 단순한 배경, 어린이 동화책에 어울리는 친근한 그림으로 그려주세요.`;
+  return p;
+}
+
+function buildEnglishDraft(){
+  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
+  let sentence = `A children's picture book illustration of ${t.en}`;
+  if(state.color){
+    const words = state.color.split(/[,，、\s]+/).filter(Boolean).map(w=>COLOR_EN[w]||w);
+    sentence += ` with ${words.join(" and ")} as the main colors`;
+  }
+  const bits = [];
+  if(state.outfit) bits.push(`wearing ${state.outfit}`);
+  bits.push(`a ${m.en} expression`);
+  if(state.trait) bits.push(`a special feature: ${state.trait}`);
+  sentence += ", " + bits.join(", ") + ".";
+  sentence += ` Art style: ${s.en}. Full body, front-facing pose, simple background, friendly and age-appropriate for children. Original character, no real people.`;
+  return sentence;
+}
+
+function buildOutputs(){
+  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
+  g("recapBadges").innerHTML = [
+    `<span class="badge">종류: <b>${esc(t.ko)}</b></span>`,
+    `<span class="badge">색깔: <b>${esc(state.color)}</b></span>`,
+    `<span class="badge">옷·소품: <b>${esc(state.outfit)}</b></span>`,
+    `<span class="badge">분위기: <b>${esc(m.ko)}</b></span>`,
+    state.trait ? `<span class="badge">특징: <b>${esc(state.trait)}</b></span>` : "",
+    `<span class="badge">그림 스타일: <b>${esc(s.ko)}</b></span>`,
+  ].join("");
+  g("koOut").textContent = buildKorean();
+  g("enOut").textContent = buildEnglishDraft();
+  g("enStatus").textContent = "자동 번역";
+}
+
+/* ---------- 복사 ---------- */
+function copyText(text, msgEl, msg){
+  navigator.clipboard.writeText(text).then(()=>{
+    msgEl.textContent = msg;
+    msgEl.className = "ok";
+    setTimeout(()=>msgEl.textContent="", 1800);
+  }).catch(()=>{
+    msgEl.textContent = "복사에 실패했어요. 직접 선택해서 복사해주세요.";
+    msgEl.className = "err";
+    setTimeout(()=>msgEl.textContent="", 2500);
+  });
+}
+g("copyKo").onclick = ()=> copyText(g("koOut").textContent, g("koMsg"), "복사됐어요 ✓");
+g("copyEn").onclick = ()=> copyText(g("enOut").textContent, g("enMsg"), "복사됐어요 ✓");
+
+/* ---------- API 키 설정 패널 ---------- */
+const KEY_STORAGE = "charGen_claudeApiKey";
+g("apiKeyInput").value = localStorage.getItem(KEY_STORAGE) || "";
+g("apiKeyInput").addEventListener("input", ()=>{
+  localStorage.setItem(KEY_STORAGE, g("apiKeyInput").value.trim());
+});
+g("toggleKeyView").onclick = ()=>{
+  const inp = g("apiKeyInput");
+  const willShow = inp.type === "password";
+  inp.type = willShow ? "text" : "password";
+  g("toggleKeyView").textContent = willShow ? "숨기기" : "보기";
+};
+g("settingsToggle").onclick = ()=>{
+  g("settingsBody").classList.toggle("open");
+  g("settingsArrow").textContent = g("settingsBody").classList.contains("open") ? "▴" : "▾";
+};
+
+/* ---------- Claude API로 영어 프롬프트 다듬기 ---------- */
+// 참고: Claude API를 브라우저에서 직접 호출하려면
+// 'anthropic-dangerous-direct-browser-access' 헤더가 반드시 필요합니다(CORS 허용).
+// 이 방식은 API 키가 브라우저에 노출되므로 교실·개인용으로만 사용하세요.
+const CLAUDE_MODEL = "claude-opus-4-8";
+
+async function refineWithClaude(koreanPrompt, draftEnglish){
+  const apiKey = (g("apiKeyInput").value || "").trim();
+  if(!apiKey){
+    g("settingsBody").classList.add("open");
+    g("settingsArrow").textContent = "▴";
+    throw new Error("API 키가 없어요. 아래 'Claude API 키 설정'에 키를 입력해주세요.");
+  }
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: 400,
+      system: "You are a translator and prompt writer for a children's AI image generation tool (Canva Magic Media). "
+            + "You will receive a Korean description of a storybook character and a rough English draft. "
+            + "Rewrite it as a single vivid, natural English image-generation prompt (2-4 sentences). "
+            + "Be concrete about appearance, colors, clothing, expression, pose, and art style. "
+            + "Keep it appropriate for children and do not add real people or real place names. "
+            + "Output ONLY the final English prompt text — no preamble, no quotes, no labels, no markdown.",
+      messages: [
+        { role: "user", content: `한글 설명:\n${koreanPrompt}\n\n영어 초안:\n${draftEnglish}` }
+      ],
+    }),
+  });
+
+  if(!res.ok){
+    let detail = "";
+    try{ const j = await res.json(); detail = j?.error?.message || ""; }catch(e){}
+    if(res.status === 401) throw new Error("API 키가 올바르지 않아요. 키를 다시 확인해주세요.");
+    if(res.status === 429) throw new Error("요청이 너무 많아요. 잠시 후 다시 시도해주세요.");
+    throw new Error("번역 요청이 실패했어요" + (detail ? ": " + detail : "."));
+  }
+
+  const data = await res.json();
+  const textBlock = (data.content || []).find(b => b.type === "text");
+  if(!textBlock || !textBlock.text) throw new Error("응답에서 텍스트를 찾지 못했어요.");
+  return textBlock.text.trim();
+}
+
+g("refineBtn").onclick = async ()=>{
+  const btn = g("refineBtn");
+  const msg = g("enMsg");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>다듬는 중...';
+  msg.className = ""; msg.textContent = "";
+  try{
+    const refined = await refineWithClaude(buildKorean(), g("enOut").textContent);
+    g("enOut").textContent = refined;
+    g("enStatus").textContent = "✨ Claude AI 다듬음";
+    msg.className = "ok";
+    msg.textContent = "AI가 더 자연스럽게 다듬었어요!";
+    setTimeout(()=>msg.textContent="", 2200);
+  }catch(err){
+    msg.className = "err";
+    msg.textContent = err.message || "알 수 없는 오류가 발생했어요.";
+  }finally{
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+};
+
+/* ---------- 초기화 ---------- */
+renderTypeGrid();
+renderColorChips();
+renderMoodGrid();
+renderStyleGrid();
+</script>
+</body>
+</html>
