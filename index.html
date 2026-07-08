@@ -3,119 +3,152 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-<title>4차시 · 주인공 캐릭터 생성기 (캔바 매직미디어 프롬프트)</title>
+<title>4차시 · 주인공 캐릭터 만들기 (캔바 매직미디어 프롬프트)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   :root{
-    --bg:#14121d; --panel:#1b1830; --panel2:#231f3a; --line:#332d4d;
-    --text:#eee9f7; --muted:#a99fc4; --accent:#c9a6ff; --accent2:#ffcf6b; --pink:#ff9ecb;
-    --chip:#282343; --danger:#ff7a9a; --warn:#ffcf6b; --good:#8ce8b0;
-    --radius:16px; --mono:"Cascadia Code",Consolas,"D2Coding",monospace;
+    /* ---- 동화책 느낌의 따뜻한 팔레트 ---- */
+    --bg:#FFF6E8;
+    --bg-deep:#FFEBCF;
+    --panel:#FFFFFF;
+    --panel2:#FFF9F0;
+    --line:#FFDCA8;
+    --text:#4A3324;
+    --muted:#A98D6E;
+    --accent:#FF8A5B;      /* 코랄 오렌지 - 메인 포인트 */
+    --accent-deep:#F26B3A;
+    --sky:#3FB6D3;         /* 하늘색 - 보조 포인트 */
+    --gold:#FFC145;        /* 골드 옐로우 */
+    --pink:#FF6F91;
+    --leaf:#6FC98A;
+    --good:#4CAF7D;
+    --warn:#F2A93B;
+    --danger:#F2506E;
+    --radius:22px;
+    --radius-sm:14px;
+    --display:"Jua","Pretendard","Malgun Gothic",sans-serif;
     --sans:"Pretendard","Malgun Gothic","Segoe UI",system-ui,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;font-size:16px}
-  header{padding:22px 20px 18px;text-align:center;background:linear-gradient(180deg,#1d1930,#14121d);border-bottom:1px solid var(--line)}
-  header h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:-.3px}
-  header .sub{color:var(--muted);font-size:13.5px;max-width:560px;margin:0 auto}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.65;font-size:17px}
+
+  /* 배경 장식: 은은한 구름/별 */
+  body{
+    background-image:
+      radial-gradient(circle at 8% 12%, rgba(255,193,69,.28) 0, transparent 45%),
+      radial-gradient(circle at 92% 18%, rgba(63,182,211,.22) 0, transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(255,138,91,.14) 0, transparent 50%);
+    background-attachment:fixed;
+  }
+
+  header{padding:34px 20px 22px;text-align:center;position:relative;overflow:hidden}
+  header .deco{position:absolute;font-size:26px;opacity:.5;pointer-events:none}
+  header .deco.s1{top:14px;left:8%}
+  header .deco.s2{top:52px;right:10%}
+  header .deco.s3{bottom:8px;left:22%}
+  header h1{font-family:var(--display);font-size:30px;margin:0 0 8px;font-weight:400;letter-spacing:-.2px;color:var(--accent-deep)}
+  header .sub{color:#7a6249;font-size:15px;max-width:520px;margin:0 auto;font-weight:600}
 
   /* ---------- 스텝퍼 ---------- */
-  .stepper{display:flex;align-items:center;justify-content:center;gap:6px;padding:18px 12px 6px;max-width:520px;margin:0 auto}
-  .step-dot{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;opacity:.55}
-  .step-dot .num{width:34px;height:34px;border-radius:999px;background:var(--chip);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--muted)}
-  .step-dot .label{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .stepper{display:flex;align-items:center;justify-content:center;gap:6px;padding:22px 12px 4px;max-width:520px;margin:0 auto}
+  .step-dot{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;opacity:.5}
+  .step-dot .num{width:42px;height:42px;border-radius:999px;background:#fff;border:2.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:17px;color:var(--muted)}
+  .step-dot .label{font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
   .step-dot.active{opacity:1}
-  .step-dot.active .num{background:var(--accent);border-color:var(--accent);color:#14121d}
-  .step-dot.active .label{color:var(--text)}
+  .step-dot.active .num{background:var(--accent);border-color:var(--accent-deep);color:#fff}
+  .step-dot.active .label{color:var(--accent-deep)}
   .step-dot.done{opacity:1}
-  .step-dot.done .num{background:var(--good);border-color:var(--good);color:#14121d}
-  .step-line{flex:1;height:2px;background:var(--line);max-width:60px;margin-top:-18px}
+  .step-dot.done .num{background:var(--good);border-color:var(--good);color:#fff}
+  .step-line{flex:1;height:3px;background:var(--line);max-width:56px;margin-top:-22px;border-radius:3px}
 
-  main{max-width:640px;margin:0 auto;padding:8px 18px 60px}
-  .step-panel{display:none;animation:fade .25s ease}
+  main{max-width:680px;margin:0 auto;padding:8px 18px 70px}
+  .step-panel{display:none;animation:fade .3s ease}
   .step-panel.active{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
-  .card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:7px}
-  .card .hint{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .card{background:var(--panel);border:2px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:18px;box-shadow:0 4px 0 rgba(255,193,69,.18)}
+  .card h2{font-family:var(--display);font-weight:400;font-size:19px;margin:0 0 5px;display:flex;align-items:center;gap:8px;color:var(--text)}
+  .card .hint{color:var(--muted);font-size:13.5px;margin:0 0 16px;font-weight:600}
 
-  label.f{display:block;margin-bottom:16px}
-  label.f .lab{font-size:14px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
-  label.f .lab .req{color:var(--pink);font-size:12px}
-  label.f .lab .opt{color:var(--muted);font-weight:400;font-size:12px}
-  input[type=text],textarea{width:100%;background:var(--panel2);border:1.5px solid var(--line);color:var(--text);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px}
+  label.f{display:block;margin-bottom:18px}
+  label.f .lab{font-size:15px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  label.f .lab .req{color:var(--pink);font-size:12.5px}
+  label.f .lab .opt{color:var(--muted);font-weight:500;font-size:12.5px}
+  input[type=text],textarea{width:100%;background:var(--panel2);border:2px solid var(--line);color:var(--text);border-radius:var(--radius-sm);padding:14px 16px;font-family:inherit;font-size:16px}
   input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent)}
-  input[type=password]{width:100%;background:var(--panel2);border:1.5px solid var(--line);color:var(--text);border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:13px}
+  input[type=text]::placeholder{color:#c9b393}
+  .counter{text-align:right;font-size:12px;color:var(--muted);margin-top:5px;font-weight:600}
+  .counter.warn{color:var(--danger)}
 
   /* ---------- 칩(선택형 버튼) ---------- */
-  .chip-row{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{background:var(--chip);border:1.5px solid var(--line);color:var(--text);border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{background:var(--panel2);border:2px solid var(--line);color:var(--text);border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
   .chip:hover{border-color:var(--accent)}
-  .chip.selected{background:var(--accent);border-color:var(--accent);color:#14121d}
-  .chip.small{padding:6px 12px;font-size:12.5px}
+  .chip.selected{background:var(--accent);border-color:var(--accent-deep);color:#fff}
+  .chip .dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:1.5px solid rgba(0,0,0,.12)}
 
   /* ---------- 종류/분위기 카드 버튼 ---------- */
-  .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .opt-btn{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;color:var(--text)}
-  .opt-btn .emoji{font-size:26px;display:block;margin-bottom:6px}
-  .opt-btn .name{font-size:13px;font-weight:700}
-  .opt-btn:hover{border-color:var(--accent)}
-  .opt-btn.selected{border-color:var(--accent);background:rgba(201,166,255,.14)}
-  @media(max-width:480px){.opt-grid{grid-template-columns:repeat(3,1fr)}}
+  .opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .opt-btn{background:var(--panel2);border:2.5px solid var(--line);border-radius:18px;padding:18px 8px;text-align:center;cursor:pointer;color:var(--text);min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .opt-btn .emoji{font-size:32px;display:block;margin-bottom:4px}
+  .opt-btn .name{font-size:14.5px;font-weight:800}
+  .opt-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .opt-btn.selected{border-color:var(--accent-deep);background:rgba(255,138,91,.13);box-shadow:0 0 0 3px rgba(255,138,91,.18)}
+  @media(max-width:480px){.opt-grid{grid-template-columns:repeat(3,1fr)}.opt-btn{padding:14px 4px;min-height:84px}.opt-btn .emoji{font-size:26px}}
 
-  .btn{background:var(--accent);color:#14121d;border:none;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;font-size:14.5px}
-  .btn:hover{filter:brightness(1.08)}
-  .btn.big{width:100%;padding:16px;font-size:16px;border-radius:14px}
-  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
-  .btn.pink{background:var(--pink);color:#14121d}
-  .btn.small{padding:8px 14px;font-size:12.5px;border-radius:10px}
-  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  .subtype-card{background:linear-gradient(180deg,#FFF3E0,#FFF9F0);border:2px dashed var(--accent);border-radius:var(--radius);padding:20px;margin-bottom:18px;display:none}
+  .subtype-card.show{display:block;animation:fade .3s ease}
+
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:15px 22px;font-weight:800;cursor:pointer;font-size:16px;font-family:var(--sans);box-shadow:0 4px 0 var(--accent-deep)}
+  .btn:hover{filter:brightness(1.05)}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--accent-deep)}
+  .btn.big{width:100%;padding:17px;font-size:17px;border-radius:16px}
+  .btn.ghost{background:#fff;color:var(--text);border:2px solid var(--line);box-shadow:none}
+  .btn.ghost:active{transform:translateY(1px)}
+  .btn.pink{background:var(--pink);box-shadow:0 4px 0 #d84a68}
+  .btn.small{padding:10px 16px;font-size:13.5px;border-radius:12px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none}
   .nav-row{display:flex;gap:10px;margin-top:6px}
   .nav-row .btn.ghost{flex:0 0 auto}
   .nav-row .btn.big{flex:1}
 
   /* ---------- 스타일 카드(2단계) ---------- */
-  .style-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .style-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:480px){.style-grid{grid-template-columns:1fr}}
-  .style-card{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
-  .style-card .swatch{height:38px;border-radius:9px;margin-bottom:9px}
-  .style-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:6px}
-  .style-card p{margin:0;color:var(--muted);font-size:12px}
-  .style-card.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,166,255,.25)}
+  .style-card{background:var(--panel2);border:2.5px solid var(--line);border-radius:18px;padding:16px;cursor:pointer}
+  .style-card .swatch{height:42px;border-radius:11px;margin-bottom:11px}
+  .style-card h3{margin:0 0 5px;font-family:var(--display);font-weight:400;font-size:17px;display:flex;align-items:center;gap:6px;color:var(--text)}
+  .style-card p{margin:0;color:var(--muted);font-size:13px;font-weight:600}
+  .style-card:hover{border-color:var(--accent)}
+  .style-card.selected{border-color:var(--accent-deep);box-shadow:0 0 0 3px rgba(255,138,91,.22)}
 
   /* ---------- 3단계 출력 ---------- */
-  .badge{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);margin:0 6px 6px 0}
-  .badge b{color:var(--accent2)}
-  .recap{margin-bottom:16px}
-  .out-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-  .out-head h2{margin:0;font-size:15px}
-  pre{background:#0e0c17;border:1px solid var(--line);border-radius:12px;padding:14px;white-space:pre-wrap;word-break:break-word;font-family:var(--sans);font-size:14.5px;margin:0;color:#e4dcff;line-height:1.65}
-  .copybar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
-  .ok{color:var(--good);font-size:12.5px;font-weight:700}
-  .err{color:var(--danger);font-size:12.5px;font-weight:700}
-  .tipbox{background:rgba(201,166,255,.09);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;font-size:13px;color:#efe6ff;margin:12px 0}
-  .safebox{background:rgba(255,207,107,.09);border:1px solid var(--warn);border-radius:12px;padding:12px 14px;font-size:13px;color:#ffe6b0;margin:12px 0}
+  .badge{display:inline-block;background:var(--panel2);border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--muted);margin:0 6px 6px 0;font-weight:700}
+  .badge b{color:var(--accent-deep)}
+  .recap{margin-bottom:18px}
+  .out-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .out-head h2{margin:0;font-size:18px}
+  pre{background:var(--panel2);border:2px solid var(--line);border-radius:var(--radius-sm);padding:16px;white-space:pre-wrap;word-break:break-word;font-family:var(--sans);font-size:16px;margin:0;color:var(--text);line-height:1.7}
+  .copybar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+  .ok{color:var(--good);font-size:13px;font-weight:800}
+  .err{color:var(--danger);font-size:13px;font-weight:800}
+  .tipbox{background:rgba(63,182,211,.12);border:2px solid var(--sky);border-radius:var(--radius-sm);padding:16px 18px;font-size:14.5px;color:#1c5c6b;margin:16px 0;font-weight:600}
+  .tipbox b{color:#0f4652}
+  .safebox{background:rgba(255,111,145,.1);border:2px solid var(--pink);border-radius:var(--radius-sm);padding:14px 18px;font-size:14px;color:#9c2c48;margin:14px 0;font-weight:700}
 
-  /* ---------- API 설정 ---------- */
-  .settings-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-  .settings-body{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-  .settings-body.open{display:block}
-  .keyrow{display:flex;gap:8px}
-  .keyrow input{flex:1}
-  .apinote{color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5}
-
-  .spinner{display:inline-block;width:14px;height:14px;border:2.5px solid rgba(238,233,247,.3);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  .foot{color:var(--muted);font-size:11.5px;margin-top:18px;text-align:center;padding:0 10px}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:20px;text-align:center;padding:0 10px;font-weight:600}
 </style>
 </head>
 <body>
 
 <header>
+  <span class="deco s1">⭐</span><span class="deco s2">☁️</span><span class="deco s3">✨</span>
   <h1>🦸 주인공 캐릭터 만들기</h1>
-  <div class="sub">4차시 · 내가 상상한 주인공을 캔바 매직미디어(Magic Media) 프롬프트로 바꿔드려요. 실제 얼굴 사진 대신, 상상 속 모습으로 안전하게 표현해요!</div>
+  <div class="sub">내가 상상한 주인공을 캔바AI 프롬프트로 만들어드려요!</div>
 </header>
 
 <div class="stepper" id="stepper">
@@ -136,13 +169,22 @@
       <div class="opt-grid" id="typeGrid"></div>
     </div>
 
+    <div class="subtype-card" id="subtypeCard">
+      <label class="f" style="margin-bottom:0">
+        <span class="lab"><span id="subtypeLabelText">어떤 친구인가요?</span> <span class="req">*필수</span></span>
+        <input type="text" id="subtypeInput" maxlength="20" placeholder="">
+        <div class="counter" id="subtypeCounter">0/20</div>
+      </label>
+    </div>
+
     <div class="card">
       <h2>🎨 주요 색깔</h2>
-      <p class="hint">아래 색깔 칩을 눌러 담거나, 직접 글로 적어도 돼요. (예: 반짝이는 금색과 하늘색)</p>
+      <p class="hint">아래 색깔 칩을 눌러 담거나, 직접 글로 적어도 돼요.</p>
       <div class="chip-row" id="colorChips"></div>
-      <label class="f" style="margin-top:12px;margin-bottom:0">
+      <label class="f" style="margin-top:14px;margin-bottom:0">
         <span class="lab">주요 색깔 <span class="req">*필수</span></span>
-        <input type="text" id="colorInput" placeholder="예: 새빨간색, 반짝이는 금색">
+        <input type="text" id="colorInput" maxlength="30" placeholder="예) 반짝이는 금색, 하늘색">
+        <div class="counter" id="colorCounter">0/30</div>
       </label>
     </div>
 
@@ -150,21 +192,29 @@
       <h2>👕 옷 · 소품</h2>
       <label class="f" style="margin-bottom:0">
         <span class="lab">어떤 옷을 입고, 무엇을 들고 있나요? <span class="req">*필수</span></span>
-        <input type="text" id="outfitInput" placeholder="예: 별무늬 망토와 마법 지팡이">
+        <input type="text" id="outfitInput" maxlength="40" placeholder="예) 별무늬 망토와 마법 지팡이">
+        <div class="counter" id="outfitCounter">0/40</div>
       </label>
     </div>
 
     <div class="card">
       <h2>😊 표정 · 분위기</h2>
-      <p class="hint">우리 주인공의 마음은 어떤 느낌인가요?</p>
+      <p class="hint">아래에서 골라보거나, 직접 적어도 좋아요.</p>
       <div class="mood-grid" id="moodGrid"></div>
+      <label class="f" style="margin-top:14px;margin-bottom:0">
+        <span class="lab">표정·분위기 <span class="req">*필수</span></span>
+        <input type="text" id="moodInput" maxlength="30" placeholder="예) 두근두근 설레는">
+        <div class="counter" id="moodCounter">0/30</div>
+      </label>
     </div>
 
     <div class="card">
       <h2>✨ 특별한 특징</h2>
+      <p class="hint">캐릭터를 자세히 설명하면 더 잘 만들어져요.</p>
       <label class="f" style="margin-bottom:0">
-        <span class="lab">다른 사람과 다른 나만의 특징 <span class="opt">(선택사항)</span></span>
-        <input type="text" id="traitInput" placeholder="예: 왼쪽 귀에 별 모양 흉터가 있어요">
+        <span class="lab">다른 친구와 다른 나만의 특징 <span class="opt">(선택사항)</span></span>
+        <input type="text" id="traitInput" maxlength="40" placeholder="예) 왼쪽 귀에 별 모양 흉터가 있어요">
+        <div class="counter" id="traitCounter">0/40</div>
       </label>
     </div>
 
@@ -194,46 +244,15 @@
     </div>
 
     <div class="card">
-      <div class="out-head"><h2>🇰🇷 한글 프롬프트</h2></div>
+      <div class="out-head"><h2>📜 완성된 프롬프트</h2></div>
       <pre id="koOut"></pre>
       <div class="copybar">
-        <button class="btn small" id="copyKo">📋 한글 복사</button>
+        <button class="btn small" id="copyKo">📋 프롬프트 복사하기</button>
         <span id="koMsg"></span>
       </div>
     </div>
 
-    <div class="card">
-      <div class="out-head">
-        <h2>🇺🇸 영어 프롬프트</h2>
-        <span class="badge" id="enStatus">자동 번역</span>
-      </div>
-      <pre id="enOut"></pre>
-      <div class="copybar">
-        <button class="btn small" id="copyEn">📋 영어 복사</button>
-        <button class="btn small pink" id="refineBtn">✨ Claude AI로 더 자연스럽게 다듬기</button>
-        <span id="enMsg"></span>
-      </div>
-    </div>
-
-    <div class="tipbox">💡 <b>캔바 사용법:</b> 캔바(Canva) → <b>매직미디어(Magic Media)</b> 메뉴에 들어가서 위 영어 프롬프트를 붙여넣고 이미지를 만들어보세요! 마음에 드는 그림이 나올 때까지 여러 번 만들어도 좋아요.</div>
-
-    <div class="card">
-      <div class="settings-toggle" id="settingsToggle">
-        <span class="lab">⚙️ Claude API 키 설정 (AI 다듬기 기능용)</span>
-        <span id="settingsArrow">▾</span>
-      </div>
-      <div class="settings-body" id="settingsBody">
-        <div class="keyrow">
-          <input type="password" id="apiKeyInput" placeholder="sk-ant-... (Claude API 키를 입력하세요)">
-          <button class="btn small ghost" id="toggleKeyView">보기</button>
-        </div>
-        <p class="apinote">
-          ✨ '더 자연스럽게 다듬기' 버튼을 쓰려면 Anthropic Claude API 키가 필요해요 (console.anthropic.com 에서 선생님이 발급).<br>
-          🔑 이 키는 이 컴퓨터의 브라우저에만 저장되고, Anthropic 서버로만 전송돼요. 다른 사람과 공용으로 쓰는 컴퓨터에는 저장하지 마세요.<br>
-          🚫 API 키 없이도 기본 영어 프롬프트는 자동으로 만들어지니, 이 기능은 선택사항이에요.
-        </p>
-      </div>
-    </div>
+    <div class="tipbox">💡 <b>캔바 사용법:</b> 캔바(Canva) → <b>캔바AI</b> 메뉴에 들어가서 위 프롬프트를 붙여넣고 이미지를 만들어보세요! 마음에 드는 그림이 나올 때까지 여러 번 만들어도 좋아요.</div>
 
     <button class="btn ghost big" id="restartBtn">↺ 처음부터 다시 만들기</button>
   </section>
@@ -247,35 +266,51 @@ const esc = s => (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/<
 
 /* ---------- 데이터 ---------- */
 const CHARTYPES = {
-  person:   {ko:"사람 캐릭터",     en:"a child character",              emoji:"🧒"},
-  animal:   {ko:"동물 캐릭터",     en:"an animal character",            emoji:"🐻"},
-  creature: {ko:"상상 속 생명체",  en:"a fantastical imaginary creature", emoji:"🦄"},
+  person:   {ko:"사람 캐릭터",    emoji:"🧒", label:"어떤 사람인가요?",   ph:"예) 씩씩한 남자아이"},
+  animal:   {ko:"동물 캐릭터",    emoji:"🐻", label:"어떤 동물인가요?",   ph:"예) 호랑이"},
+  creature: {ko:"상상 속 생명체", emoji:"🦄", label:"어떤 생명체인가요?", ph:"예) 날개 달린 용"},
 };
 
 const MOODS = {
-  bright: {ko:"밝고 씩씩한",   en:"bright, cheerful, and full of energy", emoji:"😄"},
-  calm:   {ko:"조용하고 차분한", en:"calm, gentle, and quiet",             emoji:"😌"},
-  funny:  {ko:"엉뚱하고 재미있는", en:"quirky, playful, and funny",        emoji:"🤪"},
-  mystic: {ko:"신비롭고 조용한", en:"mysterious and softly quiet",         emoji:"🌙"},
+  bright: {ko:"밝고 씩씩한",     emoji:"😄"},
+  calm:   {ko:"조용하고 차분한", emoji:"😌"},
+  funny:  {ko:"엉뚱하고 재미있는", emoji:"🤪"},
+  mystic: {ko:"신비롭고 조용한", emoji:"🌙"},
 };
 
 const STYLES = {
-  watercolor: {ko:"수채화",      en:"soft watercolor illustration with gentle, blended brush strokes", sw:"linear-gradient(90deg,#ffd7e6,#cfe8ff,#d7f0d8)"},
-  manhwa:     {ko:"만화체",      en:"clean comic / manhwa style with bold outlines and flat colors",   sw:"linear-gradient(90deg,#ff9e7d,#ffd36b,#7ec8a0)"},
-  digital:    {ko:"디지털페인팅", en:"rich digital painting with painterly brush strokes and soft lighting", sw:"linear-gradient(90deg,#6a4c93,#f79256,#ffca3a)"},
-  cartoon:    {ko:"카툰",        en:"playful, exaggerated cartoon style like an animated movie",       sw:"linear-gradient(90deg,#ff70a6,#70d6ff,#ffd670)"},
-  pastel:     {ko:"파스텔",      en:"dreamy, soft pastel color palette with gentle gradients",         sw:"linear-gradient(90deg,#f7d6e0,#d6c2f7,#c2e0f7)"},
+  watercolor: {ko:"수채화",       desc:"부드럽고 은은한 붓터치의 그림",       sw:"linear-gradient(90deg,#ffd7e6,#cfe8ff,#d7f0d8)"},
+  manhwa:     {ko:"만화체",       desc:"선명한 선과 색깔의 만화 그림",         sw:"linear-gradient(90deg,#ff9e7d,#ffd36b,#7ec8a0)"},
+  digital:    {ko:"디지털 페인팅", desc:"풍부한 색감의 세밀한 그림",           sw:"linear-gradient(90deg,#6a4c93,#f79256,#ffca3a)"},
+  cartoon:    {ko:"카툰",         desc:"통통 튀는 개성 넘치는 애니메이션 그림", sw:"linear-gradient(90deg,#ff70a6,#70d6ff,#ffd670)"},
+  pastel:     {ko:"파스텔",       desc:"몽글몽글 꿈꾸는 듯한 파스텔 그림",     sw:"linear-gradient(90deg,#f7d6e0,#d6c2f7,#c2e0f7)"},
 };
 
-const COLOR_PRESETS = ["빨간색","주황색","노란색","초록색","파란색","보라색","분홍색","하늘색","갈색","검은색","하얀색","금색","은색","무지개색"];
-const COLOR_EN = {
-  "빨간색":"red","주황색":"orange","노란색":"yellow","초록색":"green","파란색":"blue","남색":"navy blue",
-  "보라색":"purple","분홍색":"pink","하늘색":"sky blue","갈색":"brown","검은색":"black","하얀색":"white",
-  "금색":"gold","은색":"silver","무지개색":"rainbow colors",
-};
+const COLOR_PRESETS = [
+  {ko:"빨간색", hex:"#e5484d"}, {ko:"주황색", hex:"#ff8a3d"}, {ko:"노란색", hex:"#ffd43d"},
+  {ko:"초록색", hex:"#4cb463"}, {ko:"파란색", hex:"#3d8bff"}, {ko:"보라색", hex:"#9d6bff"},
+  {ko:"분홍색", hex:"#ff8fc0"}, {ko:"하늘색", hex:"#5fc8e6"}, {ko:"갈색",   hex:"#a3703f"},
+  {ko:"검은색", hex:"#333333"}, {ko:"하얀색", hex:"#f5f5f5"}, {ko:"금색",   hex:"#e0b23c"},
+  {ko:"은색",   hex:"#c0c0c8"}, {ko:"무지개색", hex:"conic-gradient(from 0deg,red,orange,yellow,green,blue,violet,red)"},
+];
 
 /* ---------- 상태 ---------- */
-let state = { type:"", color:"", outfit:"", mood:"", trait:"", style:"" };
+let state = {
+  type:"", subtypeByType:{ person:"", animal:"", creature:"" },
+  color:"", outfit:"", mood:"", trait:"", style:""
+};
+
+/* ---------- 글자 수 카운터 ---------- */
+function wireCounter(inputId, counterId, max){
+  const inp = g(inputId), c = g(counterId);
+  function upd(){
+    const len = inp.value.length;
+    c.textContent = `${len}/${max}`;
+    c.classList.toggle("warn", len >= max);
+  }
+  inp.addEventListener("input", upd);
+  upd();
+}
 
 /* ---------- 1단계: 종류 ---------- */
 function renderTypeGrid(){
@@ -284,23 +319,49 @@ function renderTypeGrid(){
     const b = document.createElement("div");
     b.className = "opt-btn" + (state.type===key ? " selected":"");
     b.innerHTML = `<span class="emoji">${v.emoji}</span><span class="name">${v.ko}</span>`;
-    b.onclick = ()=>{ state.type = key; renderTypeGrid(); validateStep1(); };
+    b.onclick = ()=>{
+      state.type = key;
+      renderTypeGrid();
+      showSubtypeCard(key);
+      validateStep1();
+    };
     el.appendChild(b);
   });
 }
+
+function showSubtypeCard(key){
+  const info = CHARTYPES[key];
+  g("subtypeLabelText").textContent = info.label;
+  g("subtypeInput").placeholder = info.ph;
+  g("subtypeInput").value = state.subtypeByType[key] || "";
+  g("subtypeCard").classList.add("show");
+  const len = g("subtypeInput").value.length;
+  g("subtypeCounter").textContent = `${len}/20`;
+}
+
+g("subtypeInput").addEventListener("input", ()=>{
+  if(!state.type) return;
+  state.subtypeByType[state.type] = g("subtypeInput").value.trim();
+  validateStep1();
+});
 
 /* ---------- 1단계: 색깔 칩 ---------- */
 function renderColorChips(){
   const el = g("colorChips"); el.innerHTML = "";
   COLOR_PRESETS.forEach(c=>{
     const b = document.createElement("button");
-    b.type="button"; b.className="chip small";
-    b.textContent = c;
+    b.type="button"; b.className="chip";
+    const bg = c.hex.startsWith("conic") ? c.hex : c.hex;
+    b.innerHTML = `<span class="dot" style="background:${bg}"></span>${c.ko}`;
     b.onclick = ()=>{
       const cur = g("colorInput").value.split(",").map(s=>s.trim()).filter(Boolean);
-      if(!cur.includes(c)) cur.push(c);
-      g("colorInput").value = cur.join(", ");
-      state.color = g("colorInput").value;
+      if(!cur.includes(c.ko)) cur.push(c.ko);
+      let joined = cur.join(", ");
+      if(joined.length > 30) joined = joined.slice(0,30);
+      g("colorInput").value = joined;
+      state.color = joined;
+      g("colorCounter").textContent = `${joined.length}/30`;
+      g("colorCounter").classList.toggle("warn", joined.length>=30);
       validateStep1();
     };
     el.appendChild(b);
@@ -312,9 +373,16 @@ function renderMoodGrid(){
   const el = g("moodGrid"); el.innerHTML = "";
   Object.entries(MOODS).forEach(([key,v])=>{
     const b = document.createElement("div");
-    b.className = "opt-btn" + (state.mood===key ? " selected":"");
+    b.className = "opt-btn" + (state.mood===v.ko ? " selected":"");
     b.innerHTML = `<span class="emoji">${v.emoji}</span><span class="name">${v.ko}</span>`;
-    b.onclick = ()=>{ state.mood = key; renderMoodGrid(); validateStep1(); };
+    b.onclick = ()=>{
+      state.mood = v.ko;
+      g("moodInput").value = v.ko;
+      g("moodCounter").textContent = `${v.ko.length}/30`;
+      g("moodCounter").classList.remove("warn");
+      renderMoodGrid();
+      validateStep1();
+    };
     el.appendChild(b);
   });
 }
@@ -325,7 +393,7 @@ function renderStyleGrid(){
   Object.entries(STYLES).forEach(([key,v])=>{
     const c = document.createElement("div");
     c.className = "style-card" + (state.style===key ? " selected":"");
-    c.innerHTML = `<div class="swatch" style="background:${v.sw}"></div><h3>${v.ko}</h3><p>${v.en}</p>`;
+    c.innerHTML = `<div class="swatch" style="background:${v.sw}"></div><h3>${v.ko}</h3><p>${v.desc}</p>`;
     c.onclick = ()=>{ state.style = key; renderStyleGrid(); g("toStep3").disabled = !state.style; };
     el.appendChild(c);
   });
@@ -335,9 +403,16 @@ function renderStyleGrid(){
 g("colorInput").addEventListener("input", ()=>{ state.color = g("colorInput").value.trim(); validateStep1(); });
 g("outfitInput").addEventListener("input", ()=>{ state.outfit = g("outfitInput").value.trim(); validateStep1(); });
 g("traitInput").addEventListener("input", ()=>{ state.trait = g("traitInput").value.trim(); });
+g("moodInput").addEventListener("input", ()=>{ state.mood = g("moodInput").value.trim(); renderMoodGrid(); validateStep1(); });
+
+wireCounter("colorInput","colorCounter",30);
+wireCounter("outfitInput","outfitCounter",40);
+wireCounter("traitInput","traitCounter",40);
+wireCounter("moodInput","moodCounter",30);
 
 function validateStep1(){
-  const ok = state.type && state.color && state.outfit && state.mood;
+  const subtype = state.type ? (state.subtypeByType[state.type] || "").trim() : "";
+  const ok = state.type && subtype && state.color && state.outfit && state.mood;
   g("toStep2").disabled = !ok;
 }
 
@@ -359,170 +434,96 @@ g("toStep3").onclick = ()=> goStep(3);
 document.querySelectorAll(".step-dot").forEach(d=>{
   d.addEventListener("click", ()=>{
     const target = parseInt(d.dataset.step,10);
+    const subtype = state.type ? (state.subtypeByType[state.type] || "").trim() : "";
     if(target===1) return goStep(1);
-    if(target===2 && state.type && state.color && state.outfit && state.mood) return goStep(2);
+    if(target===2 && state.type && subtype && state.color && state.outfit && state.mood) return goStep(2);
     if(target===3 && state.style) return goStep(3);
   });
 });
 
 g("restartBtn").onclick = ()=>{
-  if(!confirm("처음부터 다시 만들까요?")) return;
-  state = { type:"", color:"", outfit:"", mood:"", trait:"", style:"" };
-  g("colorInput").value=""; g("outfitInput").value=""; g("traitInput").value="";
+  state = {
+    type:"", subtypeByType:{ person:"", animal:"", creature:"" },
+    color:"", outfit:"", mood:"", trait:"", style:""
+  };
+  g("colorInput").value=""; g("outfitInput").value=""; g("traitInput").value=""; g("moodInput").value="";
+  g("subtypeInput").value="";
+  g("subtypeCard").classList.remove("show");
+  g("colorCounter").textContent="0/30"; g("colorCounter").classList.remove("warn");
+  g("outfitCounter").textContent="0/40"; g("outfitCounter").classList.remove("warn");
+  g("traitCounter").textContent="0/40"; g("traitCounter").classList.remove("warn");
+  g("moodCounter").textContent="0/30"; g("moodCounter").classList.remove("warn");
+  g("subtypeCounter").textContent="0/20"; g("subtypeCounter").classList.remove("warn");
   renderTypeGrid(); renderMoodGrid(); renderStyleGrid();
   g("toStep2").disabled = true; g("toStep3").disabled = true;
-  g("enStatus").textContent = "자동 번역";
   goStep(1);
 };
 
 /* ---------- 프롬프트 조립 ---------- */
 function buildKorean(){
-  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
-  let p = `${s.ko} 스타일로 그린 ${t.ko}.`;
+  const subtype = (state.subtypeByType[state.type] || "").trim();
+  const s = STYLES[state.style];
+  let p = `${s.ko} 스타일로 그린 ${subtype} 캐릭터.`;
   if(state.color) p += ` 주요 색깔은 ${state.color}이다.`;
   if(state.outfit) p += ` ${state.outfit}을(를) 하고 있다.`;
-  p += ` 표정과 분위기는 ${m.ko} 느낌이다.`;
+  p += ` 표정과 분위기는 ${state.mood} 느낌이다.`;
   if(state.trait) p += ` 특별한 특징: ${state.trait}.`;
   p += ` 정면을 바라보는 전신 포즈, 단순한 배경, 어린이 동화책에 어울리는 친근한 그림으로 그려주세요.`;
   return p;
 }
 
-function buildEnglishDraft(){
-  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
-  let sentence = `A children's picture book illustration of ${t.en}`;
-  if(state.color){
-    const words = state.color.split(/[,，、\s]+/).filter(Boolean).map(w=>COLOR_EN[w]||w);
-    sentence += ` with ${words.join(" and ")} as the main colors`;
-  }
-  const bits = [];
-  if(state.outfit) bits.push(`wearing ${state.outfit}`);
-  bits.push(`a ${m.en} expression`);
-  if(state.trait) bits.push(`a special feature: ${state.trait}`);
-  sentence += ", " + bits.join(", ") + ".";
-  sentence += ` Art style: ${s.en}. Full body, front-facing pose, simple background, friendly and age-appropriate for children. Original character, no real people.`;
-  return sentence;
-}
-
 function buildOutputs(){
-  const t = CHARTYPES[state.type], m = MOODS[state.mood], s = STYLES[state.style];
+  const subtype = (state.subtypeByType[state.type] || "").trim();
+  const s = STYLES[state.style];
   g("recapBadges").innerHTML = [
-    `<span class="badge">종류: <b>${esc(t.ko)}</b></span>`,
+    `<span class="badge">종류: <b>${esc(subtype)}</b></span>`,
     `<span class="badge">색깔: <b>${esc(state.color)}</b></span>`,
     `<span class="badge">옷·소품: <b>${esc(state.outfit)}</b></span>`,
-    `<span class="badge">분위기: <b>${esc(m.ko)}</b></span>`,
+    `<span class="badge">분위기: <b>${esc(state.mood)}</b></span>`,
     state.trait ? `<span class="badge">특징: <b>${esc(state.trait)}</b></span>` : "",
     `<span class="badge">그림 스타일: <b>${esc(s.ko)}</b></span>`,
   ].join("");
   g("koOut").textContent = buildKorean();
-  g("enOut").textContent = buildEnglishDraft();
-  g("enStatus").textContent = "자동 번역";
 }
 
 /* ---------- 복사 ---------- */
 function copyText(text, msgEl, msg){
-  navigator.clipboard.writeText(text).then(()=>{
+  function showOk(){
     msgEl.textContent = msg;
     msgEl.className = "ok";
     setTimeout(()=>msgEl.textContent="", 1800);
-  }).catch(()=>{
+  }
+  function showFail(){
     msgEl.textContent = "복사에 실패했어요. 직접 선택해서 복사해주세요.";
     msgEl.className = "err";
     setTimeout(()=>msgEl.textContent="", 2500);
-  });
+  }
+  // 구형 브라우저나 file:// 로 직접 열었을 때는 navigator.clipboard가 아예 없거나
+  // 보안 컨텍스트(https)가 아니라서 막히는 경우가 있어, execCommand로 한번 더 시도한다.
+  function fallbackCopy(){
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if(success) showOk(); else showFail();
+    }catch(e){
+      showFail();
+    }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(showOk).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
 }
 g("copyKo").onclick = ()=> copyText(g("koOut").textContent, g("koMsg"), "복사됐어요 ✓");
-g("copyEn").onclick = ()=> copyText(g("enOut").textContent, g("enMsg"), "복사됐어요 ✓");
-
-/* ---------- API 키 설정 패널 ---------- */
-const KEY_STORAGE = "charGen_claudeApiKey";
-g("apiKeyInput").value = localStorage.getItem(KEY_STORAGE) || "";
-g("apiKeyInput").addEventListener("input", ()=>{
-  localStorage.setItem(KEY_STORAGE, g("apiKeyInput").value.trim());
-});
-g("toggleKeyView").onclick = ()=>{
-  const inp = g("apiKeyInput");
-  const willShow = inp.type === "password";
-  inp.type = willShow ? "text" : "password";
-  g("toggleKeyView").textContent = willShow ? "숨기기" : "보기";
-};
-g("settingsToggle").onclick = ()=>{
-  g("settingsBody").classList.toggle("open");
-  g("settingsArrow").textContent = g("settingsBody").classList.contains("open") ? "▴" : "▾";
-};
-
-/* ---------- Claude API로 영어 프롬프트 다듬기 ---------- */
-// 참고: Claude API를 브라우저에서 직접 호출하려면
-// 'anthropic-dangerous-direct-browser-access' 헤더가 반드시 필요합니다(CORS 허용).
-// 이 방식은 API 키가 브라우저에 노출되므로 교실·개인용으로만 사용하세요.
-const CLAUDE_MODEL = "claude-opus-4-8";
-
-async function refineWithClaude(koreanPrompt, draftEnglish){
-  const apiKey = (g("apiKeyInput").value || "").trim();
-  if(!apiKey){
-    g("settingsBody").classList.add("open");
-    g("settingsArrow").textContent = "▴";
-    throw new Error("API 키가 없어요. 아래 'Claude API 키 설정'에 키를 입력해주세요.");
-  }
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 400,
-      system: "You are a translator and prompt writer for a children's AI image generation tool (Canva Magic Media). "
-            + "You will receive a Korean description of a storybook character and a rough English draft. "
-            + "Rewrite it as a single vivid, natural English image-generation prompt (2-4 sentences). "
-            + "Be concrete about appearance, colors, clothing, expression, pose, and art style. "
-            + "Keep it appropriate for children and do not add real people or real place names. "
-            + "Output ONLY the final English prompt text — no preamble, no quotes, no labels, no markdown.",
-      messages: [
-        { role: "user", content: `한글 설명:\n${koreanPrompt}\n\n영어 초안:\n${draftEnglish}` }
-      ],
-    }),
-  });
-
-  if(!res.ok){
-    let detail = "";
-    try{ const j = await res.json(); detail = j?.error?.message || ""; }catch(e){}
-    if(res.status === 401) throw new Error("API 키가 올바르지 않아요. 키를 다시 확인해주세요.");
-    if(res.status === 429) throw new Error("요청이 너무 많아요. 잠시 후 다시 시도해주세요.");
-    throw new Error("번역 요청이 실패했어요" + (detail ? ": " + detail : "."));
-  }
-
-  const data = await res.json();
-  const textBlock = (data.content || []).find(b => b.type === "text");
-  if(!textBlock || !textBlock.text) throw new Error("응답에서 텍스트를 찾지 못했어요.");
-  return textBlock.text.trim();
-}
-
-g("refineBtn").onclick = async ()=>{
-  const btn = g("refineBtn");
-  const msg = g("enMsg");
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>다듬는 중...';
-  msg.className = ""; msg.textContent = "";
-  try{
-    const refined = await refineWithClaude(buildKorean(), g("enOut").textContent);
-    g("enOut").textContent = refined;
-    g("enStatus").textContent = "✨ Claude AI 다듬음";
-    msg.className = "ok";
-    msg.textContent = "AI가 더 자연스럽게 다듬었어요!";
-    setTimeout(()=>msg.textContent="", 2200);
-  }catch(err){
-    msg.className = "err";
-    msg.textContent = err.message || "알 수 없는 오류가 발생했어요.";
-  }finally{
-    btn.disabled = false;
-    btn.textContent = original;
-  }
-};
 
 /* ---------- 초기화 ---------- */
 renderTypeGrid();
